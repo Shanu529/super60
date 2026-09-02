@@ -1,10 +1,11 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { getWithFallback } from '../lib/api.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const STATS = [
+const FALLBACK_STATS = [
   {
     icon: '📊',
     num: 860000,
@@ -37,6 +38,11 @@ export default function Achievements() {
   const eyebrowRef = useRef(null)
   const titleRef = useRef(null)
   const gridRef = useRef(null)
+  const [items, setItems] = useState(FALLBACK_STATS)
+
+  useEffect(() => {
+    getWithFallback('/homepage/achievement-stats', FALLBACK_STATS).then(setItems)
+  }, [])
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -353,7 +359,7 @@ export default function Achievements() {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [items])
 
   /*
   =====================================================
@@ -510,7 +516,7 @@ export default function Achievements() {
           ref={gridRef}
           className="stat-grid"
         >
-          {STATS.map((s, index) => (
+          {items.map((s, index) => (
             <div
               key={s.label}
               className="stat-card"

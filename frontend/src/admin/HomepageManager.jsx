@@ -8,6 +8,13 @@ import {
   contactInfo as contactFallback,
 } from '../data/fallback.js'
 
+const achievementStatsFallback = [
+  { icon: '📊', num: 860000, prefix: '₹', label: 'Revenue Generated' },
+  { icon: '👤', num: 100, prefix: '', label: 'Tech Partners' },
+  { icon: '💡', num: 150, prefix: '', label: 'Projects Delivered' },
+  { icon: '📅', num: 40, prefix: '', label: 'Community Events' },
+]
+
 function ArrayEditor({ label, rows, setRows, itemFields, makeEmpty }) {
   const update = (i, key, value) => {
     const copy = [...rows]
@@ -24,7 +31,11 @@ function ArrayEditor({ label, rows, setRows, itemFields, makeEmpty }) {
         <button type="button" onClick={add}>+ Add</button>
       </div>
       {rows.map((row, i) => (
-        <div className="hm-array-row" key={i}>
+        <div
+          className="hm-array-row"
+          key={i}
+          style={{ gridTemplateColumns: `repeat(${itemFields.length}, 1fr) 28px` }}
+        >
           {itemFields.map((f) => (
             <input
               key={f}
@@ -46,6 +57,7 @@ export default function HomepageManager() {
   const [why, setWhy] = useState(whyFallback)
   const [highlights, setHighlights] = useState(highlightsFallback)
   const [stats, setStats] = useState(statsFallback)
+  const [achievementStats, setAchievementStats] = useState(achievementStatsFallback)
   const [contact, setContact] = useState(contactFallback)
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState('')
@@ -60,7 +72,8 @@ export default function HomepageManager() {
       if (d.whyChooseUs) setWhy(d.whyChooseUs)
       if (d.highlights) setHighlights(d.highlights)
       if (d.stats) setStats(d.stats)
-      if (d.contact) setContact(d.contact)
+      if (d.achievementStats) setAchievementStats(d.achievementStats)
+      if (d.contact) setContact({ ...contactFallback, ...d.contact, socials: d.contact.socials || [] })
     }).catch(() => {})
   }, [])
 
@@ -76,6 +89,7 @@ export default function HomepageManager() {
         whyChooseUs: why,
         highlights,
         stats,
+        achievementStats,
         contact,
       }, { auth: true })
       setStatus('Homepage content saved.')
@@ -139,6 +153,18 @@ export default function HomepageManager() {
         </section>
 
         <section>
+          <h3>Achievement Counters</h3>
+          <p className="hm-hint">Powers the animated counter cards ("Revenue Generated", etc). Num is the raw number to count up to — the prefix (e.g. "₹") is shown before it.</p>
+          <ArrayEditor
+            label="Counters (icon, num, prefix, label)"
+            rows={achievementStats}
+            setRows={setAchievementStats}
+            itemFields={['icon', 'num', 'prefix', 'label']}
+            makeEmpty={() => ({ icon: '📊', num: 0, prefix: '', label: '' })}
+          />
+        </section>
+
+        <section>
           <h3>Contact Info</h3>
           <label className="rm-field">Email
             <input value={contact.email || ''} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
@@ -149,6 +175,17 @@ export default function HomepageManager() {
           <label className="rm-field">Address
             <input value={contact.address || ''} onChange={(e) => setContact({ ...contact, address: e.target.value })} />
           </label>
+        </section>
+
+        <section>
+          <h3>Social Links</h3>
+          <ArrayEditor
+            label="Links (label, url)"
+            rows={contact.socials || []}
+            setRows={(next) => setContact({ ...contact, socials: next })}
+            itemFields={['label', 'url']}
+            makeEmpty={() => ({ label: '', url: '' })}
+          />
         </section>
 
         <button type="submit" className="btn btn-primary" disabled={saving}>
@@ -164,6 +201,7 @@ export default function HomepageManager() {
           display: flex; flex-direction: column; gap: 14px;
         }
         .hm-form h3 { font-family: var(--font-display); font-size: 15px; margin: 0; }
+        .hm-hint { color: var(--grey-dim); font-size: 12px; margin: -6px 0 0; line-height: 1.5; }
         .hm-array-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--grey-dim); }
         .hm-array-head button {
           background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px;

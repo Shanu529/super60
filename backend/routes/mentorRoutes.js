@@ -1,10 +1,10 @@
 const express = require('express')
-const { protect } = require('../middleware/auth.js')
+const { protect, adminOnly } = require('../middleware/auth.js')
 const ctrl = require('../controllers/mentorController.js')
 
 const router = express.Router()
 
 router.get('/', ctrl.get)
-router.put('/', protect, ctrl.upsert)
+router.put('/', protect, adminOnly, ctrl.upsert)
 
 module.exports = router

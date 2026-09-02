@@ -6,6 +6,7 @@ const announcementSchema = new mongoose.Schema(
     tag: { type: String },
     date: { type: Date, required: true },
     excerpt: { type: String },
+    image: { type: String },
   },
   { timestamps: true }
 )

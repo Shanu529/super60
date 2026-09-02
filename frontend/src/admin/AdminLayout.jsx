@@ -11,6 +11,7 @@ const LINKS = [
   { to: '/admin/events', label: 'Events' },
   { to: '/admin/gallery', label: 'Gallery' },
   { to: '/admin/announcements', label: 'Announcements' },
+  { to: '/admin/achievements', label: 'Achievements' },
   { to: '/admin/homepage', label: 'Homepage Content' },
 ]
 

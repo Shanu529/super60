@@ -1,6 +1,6 @@
 const express = require('express')
 const { protect, adminOnly } = require('../middleware/auth.js')
-const ctrl = require('../controllers/projectController.js')
+const ctrl = require('../controllers/achievementController.js')
 
 const router = express.Router()
 

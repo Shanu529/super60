@@ -49,6 +49,11 @@ export async function getWithFallback(path, fallback, unwrap = 'data') {
     }
     return value
   } catch (err) {
+    // Fallback content keeps the page usable, but a silently-swallowed
+    // error here is exactly how real backend/API bugs go unnoticed
+    // during development. Surface it in the console — the UI still
+    // degrades gracefully, this doesn't change that.
+    console.error(`[api] GET ${path} failed, using fallback content:`, err.message || err)
     return fallback
   }
 }

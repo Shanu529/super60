@@ -1,10 +1,24 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
+import { getWithFallback } from '../lib/api.js'
+import { contactInfo as contactFallback } from '../data/fallback.js'
+
+function findSocialUrl(socials, label) {
+  const match = socials?.find((s) => s.label?.toLowerCase() === label.toLowerCase())
+  return match?.url || '#'
+}
 
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [socials, setSocials] = useState(contactFallback.socials || [])
   const footerRef = useRef(null)
+
+  useEffect(() => {
+    getWithFallback('/homepage/contact', contactFallback).then((data) => {
+      if (data?.socials?.length) setSocials(data.socials)
+    })
+  }, [])
 
   useEffect(() => {
     const elements = footerRef.current?.querySelectorAll('.footer-reveal')
@@ -138,7 +152,9 @@ export default function Footer() {
           <div className="footer-socials">
 
             <a
-              href="#"
+              href={findSocialUrl(socials, 'Instagram')}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               className="social-link"
             >
@@ -146,7 +162,9 @@ export default function Footer() {
             </a>
 
             <a
-              href="#"
+              href={findSocialUrl(socials, 'LinkedIn')}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="LinkedIn"
               className="social-link"
             >
@@ -154,7 +172,9 @@ export default function Footer() {
             </a>
 
             <a
-              href="#"
+              href={findSocialUrl(socials, 'GitHub')}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="GitHub"
               className="social-link"
             >
@@ -267,12 +287,21 @@ export default function Footer() {
           © {new Date().getFullYear()} Super 60 Community. All rights reserved.
         </span>
 
-        <Link
-          to="/admin/login"
-          className="footer-admin-link"
-        >
-          Admin
-        </Link>
+        <div className="footer-bottom-links">
+          <Link
+            to="/login"
+            className="footer-admin-link"
+          >
+            Account
+          </Link>
+
+          <Link
+            to="/admin/login"
+            className="footer-admin-link"
+          >
+            Admin
+          </Link>
+        </div>
 
       </div>
 
@@ -813,6 +842,12 @@ export default function Footer() {
 
           transition:
             color 0.25s ease;
+        }
+
+        .footer-bottom-links {
+          display: flex;
+          align-items: center;
+          gap: 18px;
         }
 
 

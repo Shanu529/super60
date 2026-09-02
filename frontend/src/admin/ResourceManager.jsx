@@ -3,7 +3,9 @@ import { api } from '../lib/api.js'
 
 const emptyFromFields = (fields) =>
   fields.reduce((acc, f) => {
-    acc[f.name] = f.type === 'checkbox' ? false : f.type === 'tags' ? '' : ''
+    if (f.type === 'checkbox') acc[f.name] = false
+    else if (f.type === 'objectArray') acc[f.name] = []
+    else acc[f.name] = ''
     return acc
   }, {})
 
@@ -11,7 +13,15 @@ function toFormState(fields, item) {
   const state = {}
   fields.forEach((f) => {
     const v = item[f.name]
-    state[f.name] = f.type === 'tags' ? (Array.isArray(v) ? v.join(', ') : v || '') : v ?? (f.type === 'checkbox' ? false : '')
+    if (f.type === 'tags') {
+      state[f.name] = Array.isArray(v) ? v.join(', ') : v || ''
+    } else if (f.type === 'objectArray') {
+      state[f.name] = Array.isArray(v) ? v.map((row) => ({ ...row })) : []
+    } else if (f.type === 'checkbox') {
+      state[f.name] = Boolean(v)
+    } else {
+      state[f.name] = v ?? ''
+    }
   })
   return state
 }
@@ -23,6 +33,11 @@ function toPayload(fields, formState) {
       payload[f.name] = formState[f.name]
         ? formState[f.name].split(',').map((s) => s.trim()).filter(Boolean)
         : []
+    } else if (f.type === 'objectArray') {
+      // Drop rows where every sub-field is empty (e.g. an accidental blank row).
+      payload[f.name] = (formState[f.name] || []).filter((row) =>
+        f.itemFields.some((sub) => String(row?.[sub.name] ?? '').trim() !== '')
+      )
     } else if (f.type === 'file') {
       // handled separately via upload
     } else {
@@ -30,6 +45,52 @@ function toPayload(fields, formState) {
     }
   })
   return payload
+}
+
+// Repeatable add/remove editor for array-of-object fields (e.g. a
+// Project's timeline: [{ phase, period }, ...]). Keeps admins from
+// ever having to hand-edit JSON.
+function ObjectArrayField({ field, value, onChange }) {
+  const rows = value || []
+
+  const updateRow = (index, subName, subValue) => {
+    const next = rows.map((row, i) => (i === index ? { ...row, [subName]: subValue } : row))
+    onChange(next)
+  }
+
+  const addRow = () => {
+    const blank = field.itemFields.reduce((acc, sub) => ({ ...acc, [sub.name]: '' }), {})
+    onChange([...rows, blank])
+  }
+
+  const removeRow = (index) => {
+    onChange(rows.filter((_, i) => i !== index))
+  }
+
+  return (
+    <div className="rm-object-array">
+      {rows.length === 0 && <p className="rm-object-array-empty">No entries yet.</p>}
+      {rows.map((row, index) => (
+        <div className="rm-object-array-row" key={index}>
+          {field.itemFields.map((sub) => (
+            <input
+              key={sub.name}
+              type="text"
+              placeholder={sub.label}
+              value={row[sub.name] || ''}
+              onChange={(e) => updateRow(index, sub.name, e.target.value)}
+            />
+          ))}
+          <button type="button" className="rm-object-array-remove" onClick={() => removeRow(index)} aria-label={`Remove ${field.label} entry`}>
+            ✕
+          </button>
+        </div>
+      ))}
+      <button type="button" className="rm-object-array-add" onClick={addRow}>
+        + Add {field.itemLabel || 'Entry'}
+      </button>
+    </div>
+  )
 }
 
 export default function ResourceManager({ config }) {
@@ -155,6 +216,8 @@ export default function ResourceManager({ config }) {
                 {f.label}
                 {f.type === 'textarea' ? (
                   <textarea rows={4} value={formState[f.name] || ''} onChange={(e) => handleChange(f.name, e.target.value)} />
+                ) : f.type === 'objectArray' ? (
+                  <ObjectArrayField field={f} value={formState[f.name]} onChange={(next) => handleChange(f.name, next)} />
                 ) : f.type === 'select' ? (
                   <select value={formState[f.name] || ''} onChange={(e) => handleChange(f.name, e.target.value)}>
                     <option value="" disabled>Select…</option>
@@ -234,6 +297,50 @@ export default function ResourceManager({ config }) {
           background: transparent; border: 1px solid var(--line); border-radius: 999px;
           padding: 8px 18px; color: var(--grey); cursor: pointer;
         }
+        .rm-object-array {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .rm-object-array-empty {
+          font-size: 12px;
+          color: var(--grey-dim);
+          margin: 0;
+        }
+        .rm-object-array-row {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+        .rm-object-array-row input {
+          flex: 1;
+          background: var(--bg);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 8px 10px;
+          color: var(--white);
+          font-size: 13px;
+        }
+        .rm-object-array-remove {
+          background: transparent;
+          border: none;
+          color: var(--grey-dim);
+          cursor: pointer;
+          font-size: 13px;
+          flex-shrink: 0;
+        }
+        .rm-object-array-remove:hover { color: #ff5a5a; }
+        .rm-object-array-add {
+          align-self: flex-start;
+          background: transparent;
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 6px 12px;
+          color: var(--red);
+          font-size: 12px;
+          cursor: pointer;
+        }
+        .rm-object-array-add:hover { border-color: var(--red); }
       `}</style>
     </div>
   )

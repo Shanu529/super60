@@ -38,5 +38,6 @@ module.exports = {
   getWhyChooseUs: sectionHandler('whyChooseUs'),
   getHighlights: sectionHandler('highlights'),
   getStats: sectionHandler('stats'),
+  getAchievementStats: sectionHandler('achievementStats'),
   getContact: sectionHandler('contact'),
 }

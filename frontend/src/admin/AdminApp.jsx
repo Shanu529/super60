@@ -20,6 +20,7 @@ export default function AdminApp() {
           <Route path="events" element={<ResourceManager config={resourceConfigs.events} />} />
           <Route path="gallery" element={<ResourceManager config={resourceConfigs.gallery} />} />
           <Route path="announcements" element={<ResourceManager config={resourceConfigs.announcements} />} />
+          <Route path="achievements" element={<ResourceManager config={resourceConfigs.achievements} />} />
           <Route path="hod" element={<SingletonManager config={singletonConfigs.hod} />} />
           <Route path="mentor" element={<SingletonManager config={singletonConfigs.mentor} />} />
           <Route path="teacher" element={<SingletonManager config={singletonConfigs.teacher} />} />

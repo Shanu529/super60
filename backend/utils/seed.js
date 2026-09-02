@@ -8,7 +8,7 @@ require('dotenv').config()
 const connectDB = require('../config/db.js')
 const mongoose = require('mongoose')
 
-const Admin = require('../models/Admin.js')
+const User = require('../models/User.js')
 const Faculty = require('../models/Faculty.js')
 const Hod = require('../models/Hod.js')
 const Mentor = require('../models/Mentor.js')
@@ -18,20 +18,29 @@ const Event = require('../models/Event.js')
 const GalleryItem = require('../models/GalleryItem.js')
 const Announcement = require('../models/Announcement.js')
 const Homepage = require('../models/Homepage.js')
+const Achievement = require('../models/Achievement.js')
 
 async function run() {
   await connectDB()
 
   // --- Admin account ---
+  // Seeded as a User document with role "admin" — this is the only
+  // place an admin account is created by code. Any other account that
+  // needs admin access must have its role changed directly in MongoDB.
   const adminEmail = (process.env.ADMIN_EMAIL || 'admin@super60.org').toLowerCase()
-  const existingAdmin = await Admin.findOne({ email: adminEmail })
+  const existingAdmin = await User.findOne({ email: adminEmail })
   if (!existingAdmin) {
-    await Admin.create({
+    await User.create({
       name: process.env.ADMIN_NAME || 'Super 60 Admin',
       email: adminEmail,
       password: process.env.ADMIN_PASSWORD || 'ChangeMe123!',
+      role: 'admin',
     })
     console.log(`Admin account created: ${adminEmail}`)
+  } else if (existingAdmin.role !== 'admin') {
+    existingAdmin.role = 'admin'
+    await existingAdmin.save()
+    console.log(`Existing account promoted to admin: ${adminEmail}`)
   } else {
     console.log(`Admin account already exists: ${adminEmail}`)
   }
@@ -283,6 +292,12 @@ if ((await Hod.countDocuments()) === 0) {
         { icon: '🏅', value: '15+', label: 'Awards & Recognitions' },
         { icon: '📅', value: '40+', label: 'Events Hosted' },
       ],
+      achievementStats: [
+        { icon: '📊', num: 860000, prefix: '₹', label: 'Revenue Generated' },
+        { icon: '👤', num: 100, prefix: '', label: 'Tech Partners' },
+        { icon: '💡', num: 150, prefix: '', label: 'Projects Delivered' },
+        { icon: '📅', num: 40, prefix: '', label: 'Community Events' },
+      ],
       contact: {
         email: 'hello@super60community.org',
         phone: '+91 98765 43210',
@@ -294,6 +309,22 @@ if ((await Hod.countDocuments()) === 0) {
         ],
       },
     })
+  }
+
+  // --- Achievements ---
+  // Same content that used to be hardcoded in AchievementsGallery.jsx —
+  // now admin-editable; this just gives it a real starting point.
+  if ((await Achievement.countDocuments()) === 0) {
+    await Achievement.insertMany([
+      { tag: 'HACKATHON', title: 'National Hackathon Gold' },
+      { tag: 'COMMUNITY', title: 'Super 60 Core Team Meetup' },
+      { tag: 'IDEATHON', title: 'Code Warriors Trophy' },
+      { tag: 'WORKSHOP', title: 'Industry Mentorship Session' },
+      { tag: 'COMPETITION', title: 'Ideathon Pitching Day' },
+      { tag: 'WORKSHOP', title: 'UI/UX Design Masterclass' },
+      { tag: 'LAUNCH', title: 'TU Community Launch Event' },
+      { tag: 'EXHIBITION', title: 'SVGOI Project Expo' },
+    ])
   }
 
   console.log('Seed complete.')

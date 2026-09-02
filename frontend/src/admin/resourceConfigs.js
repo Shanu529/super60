@@ -38,6 +38,16 @@ export const resourceConfigs = {
       { name: 'features', label: 'Features (comma separated)', type: 'tags' },
       { name: 'objectives', label: 'Objectives (comma separated)', type: 'tags' },
       { name: 'team', label: 'Team Members (comma separated)', type: 'tags' },
+      {
+        name: 'timeline',
+        label: 'Timeline',
+        type: 'objectArray',
+        itemLabel: 'Phase',
+        itemFields: [
+          { name: 'phase', label: 'Phase (e.g. Research)' },
+          { name: 'period', label: 'Period (e.g. Jan 2026)' },
+        ],
+      },
       { name: 'image', label: 'Cover Image', type: 'file' },
       { name: 'featured', label: 'Show in Featured Projects', type: 'checkbox' },
     ],
@@ -88,6 +98,23 @@ export const resourceConfigs = {
       { name: 'tag', label: 'Tag', type: 'text' },
       { name: 'date', label: 'Date', type: 'date' },
       { name: 'excerpt', label: 'Excerpt', type: 'textarea' },
+      { name: 'image', label: 'Image', type: 'file' },
+    ],
+  },
+  achievements: {
+    title: 'Achievements',
+    endpoint: '/achievements',
+    columns: [
+      { key: 'title', label: 'Title' },
+      { key: 'tag', label: 'Tag' },
+      { key: 'year', label: 'Year' },
+    ],
+    fields: [
+      { name: 'title', label: 'Title', type: 'text' },
+      { name: 'tag', label: 'Tag (e.g. HACKATHON)', type: 'text' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'year', label: 'Year', type: 'text' },
+      { name: 'image', label: 'Image', type: 'file' },
     ],
   },
 }

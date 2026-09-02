@@ -9,6 +9,7 @@ const CARDS = [
   { to: '/admin/events', label: 'Events', desc: 'Manage upcoming and past events.' },
   { to: '/admin/gallery', label: 'Gallery', desc: 'Manage photo gallery entries.' },
   { to: '/admin/announcements', label: 'Announcements', desc: 'Post and manage announcements.' },
+  { to: '/admin/achievements', label: 'Achievements', desc: 'Manage the achievements/awards gallery.' },
   { to: '/admin/homepage', label: 'Homepage Content', desc: 'Edit vision, highlights, stats & contact info.' },
 ]
 
